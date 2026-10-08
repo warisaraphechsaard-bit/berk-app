@@ -1,153 +1,142 @@
-<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>โปรแกรมเบิก — ฉบับทดลอง</title>
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>โปรแกรมเบิก</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f6fa;color:#111827}
-header{background:#111827;color:#fff;padding:17px 16px;position:sticky;top:0;z-index:5}.wrap{max-width:800px;margin:auto}h1{margin:0;font-size:22px}
-main{padding:14px 14px 90px}.card{background:#fff;border-radius:18px;padding:15px;margin-bottom:13px;box-shadow:0 2px 10px #0000000b}
-label{display:block;font-weight:700;font-size:14px;margin:10px 0 6px}input,select{width:100%;padding:11px;border:1px solid #ddd;border-radius:11px;background:#fff;font:inherit}
-button{border:0;border-radius:11px;padding:10px 12px;font-weight:700;font:inherit}.primary{background:#111827;color:#fff;width:100%;margin-top:12px}.green{background:#16a34a;color:#fff}.yellow{background:#f59e0b;color:#111}.red{background:#dc2626;color:#fff}.blue{background:#2563eb;color:#fff}.gray{background:#e5e7eb}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.money{font-size:28px;font-weight:850}.muted{color:#6b7280;font-size:13px}.row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #eee}.item{border:1px solid #e5e7eb;border-radius:13px;padding:12px;margin-top:9px}.actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}
-.tag{font-size:11px;padding:4px 8px;border-radius:20px;background:#eee}.ok{background:#dcfce7;color:#166534}.stop{background:#fef3c7;color:#92400e}.back{background:#dbeafe;color:#1e40af}
-.hidden{display:none}nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #ddd;display:grid;grid-template-columns:repeat(5,1fr);z-index:9}nav button{background:#fff;border-radius:0;font-size:11px;padding:9px 2px}nav .active{color:#2563eb}.house-status{display:grid;grid-template-columns:1fr 1fr;gap:7px}.house-status button{font-size:12px}.smallbtn{padding:7px 9px;font-size:12px}
-</style></head><body>
-<header><div class="wrap"><h1>💰 โปรแกรมเบิก</h1><div style="opacity:.75;font-size:12px">ฉบับทดลองตรวจระบบ — กระเป๋าเริ่มต้น 30,000 บาท</div></div></header>
-<main class="wrap">
-
-<section id="home">
-<div class="card"><div class="muted">เงินในกระเป๋า</div><div id="wallet" class="money">30,000 บาท</div><button class="blue" style="margin-top:9px;width:100%" onclick="page('settings',document.querySelectorAll('nav button')[4])">⚙️ ไปแก้ยอดเงินในกระเป๋า</button></div>
-<div class="card"><h2>ทำรายการเบิก</h2>
-<label>บ้าน</label>
-<select id="house" onchange="showSelectedStatus()"></select>
-<div id="selectedStatus" style="margin-top:8px"></div>
-<div style="margin-top:8px;padding:10px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px">
-  <div style="font-weight:800;font-size:13px;margin-bottom:7px">สถานะบ้านของบ้านที่เลือก</div>
-  <div id="statusButtons" style="display:grid;grid-template-columns:1fr 1fr;gap:8px"></div>
-</div>
-<label>วันที่</label><input id="date" type="date">
-<label>ยอดเบิกเต็ม</label><input id="amount" type="number" min="0" step="1" placeholder="ใส่ยอดเบิก">
-<div class="grid"><div><div class="muted">ค่าเอกสาร 10%</div><b id="fee">0 บาท</b></div><div><div class="muted">ลูกค้าได้รับ 90%</div><b id="net">0 บาท</b></div></div>
-<div id="otherNotice" class="muted" style="margin-top:8px"></div>
-<label>เลขา</label><select id="secretary"></select>
-<label>สถานะการโอน</label><select id="status"><option value="pending">ยังไม่โอนลูกค้า</option><option value="paid">โอนลูกค้าแล้ว</option></select>
-<button class="primary" onclick="saveRecord()">บันทึกรายการ</button></div>
-</section>
-
-<section id="summary" class="hidden">
-<div class="card"><h2>📊 สรุปนายหน้า</h2><label>วันที่</label><input id="summaryDate" type="date" onchange="renderSummary()"><div id="summaryBody"></div></div>
-<div class="card"><h2>👩‍💼 สรุปเลขา</h2><div id="secSummary"></div><button class="yellow" style="width:100%;margin-top:10px" onclick="paySecretary()">โอนเงินให้เลขาแล้ว</button></div>
-<div class="card"><h2>🔒 ปิดยอด</h2><button class="green" style="width:100%" onclick="closeDay()">คืนเงินเข้ากระเป๋าแล้ว</button></div>
-</section>
-
-<section id="reserve" class="hidden">
-<div class="card"><h2>📦 ยอดสำรอง</h2><label>วันที่</label><input id="reserveDate" type="date" onchange="renderReserve()"><div id="reserveBody"></div>
-<button class="yellow" style="width:100%;margin-top:10px" onclick="addReserve()">➕ เพิ่มเงินสำรองให้บ้าน</button></div>
-</section>
-
-<section id="history" class="hidden">
-<div class="card"><h2>📜 ประวัติ</h2><div style="display:flex;gap:6px;overflow:auto;margin-bottom:8px"><button class="gray" onclick="setFilter('day',this)">วันนี้</button><button class="gray" onclick="setFilter('week',this)">สัปดาห์</button><button class="gray" onclick="setFilter('month',this)">เดือน</button><button class="gray" onclick="setFilter('all',this)">ทั้งหมด</button></div><label>วันที่อ้างอิง</label><input id="historyDate" type="date" onchange="renderHistory()"><div id="historyTotals"></div><div id="historyList"></div></div>
-</section>
-
-<section id="settings" class="hidden">
-<div class="card">
-<h2>⚙️ จัดการบ้าน</h2>
-<div class="muted">เพิ่ม/แก้ชื่อ/ลบ และตั้งสถานะของแต่ละบ้านได้ตรงนี้</div>
-<div id="houseManage"></div>
-<div style="display:grid;grid-template-columns:1fr auto;gap:7px;margin-top:12px">
-<input id="newHouse" placeholder="พิมพ์ชื่อบ้านใหม่">
-<button class="blue" onclick="addHouseVisible()">➕ เพิ่มบ้าน</button>
-</div>
-</div>
-<div class="card">
-<h2>👩‍💼 จัดการเลขา</h2>
-<div class="muted">เพิ่ม/แก้ชื่อ/ลบได้เอง ไม่ต้องทำแอปใหม่</div>
-<div id="secManage"></div>
-<div style="display:grid;grid-template-columns:1fr auto;gap:7px;margin-top:12px">
-<input id="newSec" placeholder="พิมพ์ชื่อเลขาใหม่">
-<button class="blue" onclick="addSecretaryVisible()">➕ เพิ่มเลขา</button>
-</div>
-</div>
-<div class="card">
-<h2>💰 แก้ยอดเงินในกระเป๋า</h2>
-<div class="muted">ใส่ยอดเงินจริงที่มีอยู่ตอนนี้ ระบบจะจำยอดนี้ไว้</div>
-<div style="display:grid;grid-template-columns:1fr auto;gap:7px;margin-top:10px">
-<input id="walletInput" type="number" min="0" placeholder="ยอดเงินในกระเป๋า">
-<button class="blue" onclick="saveWalletVisible()">💾 บันทึกยอด</button>
-</div>
-<div id="walletAdjustHistory" style="margin-top:10px"></div>
-</div>
-</section>
-</main>
-<nav><button class="active" onclick="page('home',this)">🏠<br>ยอดเบิก</button><button onclick="page('summary',this)">📊<br>สรุป</button><button onclick="page('reserve',this)">📦<br>สำรอง</button><button onclick="page('history',this)">📜<br>ประวัติ</button><button onclick="page('settings',this)">⚙️<br>ตั้งค่า</button></nav>
-
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f4f6fa;color:#222;padding-bottom:82px}
+header{background:#111827;color:#fff;padding:18px 16px}.wrap{max-width:850px;margin:auto}.wallet{font-size:30px;font-weight:800;margin-top:4px}
+main{padding:14px}.card{background:#fff;border-radius:16px;padding:15px;margin-bottom:12px;box-shadow:0 2px 10px #0001}
+h2{margin:0 0 12px;font-size:19px}label{display:block;font-size:13px;font-weight:700;margin:10px 0 5px}
+input,select,button{font:inherit}input,select{width:100%;padding:11px;border:1px solid #d4d8df;border-radius:10px;background:#fff}
+button{border:0;border-radius:10px;padding:11px 13px;font-weight:700}.primary{background:#111827;color:#fff}.gray{background:#eef1f5}.danger{background:#fee2e2;color:#991b1b}
+.status{display:flex;gap:8px}.status button{flex:1;background:#f0f2f5}.status .active.green{background:#dcfce7;color:#166534;outline:3px solid #22c55e}.status .active.yellow{background:#fef3c7;color:#92400e;outline:3px solid #f59e0b}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}.stat{background:#f7f8fa;padding:12px;border-radius:12px}.stat b{display:block;font-size:20px;margin-top:3px}
+.item{border:1px solid #e1e4e9;border-radius:12px;padding:11px;margin:8px 0}.row{display:flex;justify-content:space-between;gap:8px;align-items:center}.muted{color:#6b7280;font-size:12px}
+.checkbox-list{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.check{display:flex;align-items:center;gap:8px;background:#f5f6f8;padding:10px;border-radius:10px;font-weight:600}.check input{width:20px;height:20px}
+.filterbar{background:#eef2ff;border:1px solid #c7d2fe;padding:12px;border-radius:12px;margin:10px 0}.pill{display:inline-block;padding:5px 9px;border-radius:20px;font-size:11px;font-weight:800}.pill.green{background:#dcfce7;color:#166534}.pill.yellow{background:#fef3c7;color:#92400e}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #ddd;display:flex;z-index:10;padding:7px 4px calc(7px + env(safe-area-inset-bottom))}
+nav button{flex:1;background:transparent;color:#555;padding:6px 2px;font-size:11px}nav button.active{color:#111827}
+@media(max-width:420px){.checkbox-list{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><div>💰 กระเป๋าเงิน</div><div class="wallet" id="wallet">30,000.00 บาท</div></div></header>
+<main class="wrap" id="app"></main>
+<nav>
+<button data-page="home">🏠<br>ยอดเบิก</button>
+<button data-page="summary">📊<br>สรุป</button>
+<button data-page="reserve">📦<br>สำรอง</button>
+<button data-page="history">📜<br>ประวัติ</button>
+<button data-page="settings">⚙️<br>ตั้งค่า</button>
+</nav>
 <script>
-const DEFAULT_H=["วริศ","ศิลา","ภูดิส","สามชั้น","แพรี่","ปุณปุณ","ริชชี่","เค้กส้ม","พริกเพชร","อื่นๆ"];
-const DEFAULT_S=["อุษา","เดีย","แนน","ใหม่","นิว","หญิง","เกด","พริก","แจ๋ว","หมิว"];
-const START=30000;
-let houses=JSON.parse(localStorage.getItem("demo_houses")||JSON.stringify(DEFAULT_H));
-let secs=JSON.parse(localStorage.getItem("demo_secs")||JSON.stringify(DEFAULT_S));
-let hs=JSON.parse(localStorage.getItem("demo_hs")||"{}"); houses.forEach(h=>{if(hs[h]===undefined)hs[h]=true});
-let records=JSON.parse(localStorage.getItem("demo_records")||"[]");
-let reserves=JSON.parse(localStorage.getItem("demo_reserves")||"[]");
-let secPaid=JSON.parse(localStorage.getItem("demo_secPaid")||"{}");
-let walletOverride=localStorage.getItem("demo_walletOverride");
-let walletAdjust=JSON.parse(localStorage.getItem("demo_walletAdjust")||"[]");
-let editId=null, filter="day";
-const $=id=>document.getElementById(id), today=()=>new Date().toISOString().slice(0,10), money=n=>Number(n||0).toLocaleString("th-TH")+" บาท";
-function persist(){localStorage.setItem("demo_houses",JSON.stringify(houses));localStorage.setItem("demo_secs",JSON.stringify(secs));localStorage.setItem("demo_hs",JSON.stringify(hs));localStorage.setItem("demo_records",JSON.stringify(records));localStorage.setItem("demo_reserves",JSON.stringify(reserves));localStorage.setItem("demo_secPaid",JSON.stringify(secPaid));if(walletOverride===null)localStorage.removeItem("demo_walletOverride");else localStorage.setItem("demo_walletOverride",walletOverride);localStorage.setItem("demo_walletAdjust",JSON.stringify(walletAdjust))}
-function feeCalc(){let h=$("house").value,a=+$("amount").value||0,other=h==="อื่นๆ";$("fee").textContent=money(other?0:a*.1);$("net").textContent=money(other?a:a*.9);$("otherNotice").textContent=other?"บ้านอื่นๆ: ไม่หัก 10% — เป็นยอดที่เลขายืมไปใช้":"บ้านปกติ: หักค่าเอกสาร 10% และลูกค้าได้รับ 90%";}
-$("amount").addEventListener("input",feeCalc);
-function showSelectedStatus(){
- let h=$("house").value,ok=hs[h]!==false;
- $("selectedStatus").innerHTML=`<div style="font-weight:800">${h} : <span class="tag ${ok?'ok':'stop'}">${ok?'🟢 เบิกได้':'🟡 หยุดเบิก'}</span></div>`;
- $("statusButtons").innerHTML=
-   `<button type="button" class="${ok?'green':'gray'}" onclick="setHouseStatus(true)">🟢 เบิกได้</button>
-    <button type="button" class="${!ok?'yellow':'gray'}" onclick="setHouseStatus(false)">🟡 หยุดเบิก</button>`;
- feeCalc();
-}
-function setHouseStatus(canBorrow){
- let h=$("house").value;if(!h)return;
- hs[h]=canBorrow;persist();showSelectedStatus();renderSummary();renderReserve();
-}
-function wallet(){if(walletOverride!==null)return +walletOverride;let out=records.filter(r=>r.status==="paid"&&!r.returned).reduce((a,r)=>a+r.net,0),sp=Object.values(secPaid).reduce((a,x)=>a+(+x||0),0);return START-out-sp}
-function editWallet(){page("settings",document.querySelectorAll("nav button")[4])}
-function saveRecord(){let h=$("house").value,a=+$("amount").value;if(!a)return alert("กรุณาใส่ยอดเบิก");if(hs[h]===false)return alert("บ้านนี้หยุดเบิกอยู่");let other=h==="อื่นๆ";let x={id:editId||Date.now(),house:h,date:$("date").value,amount:a,fee:other?0:a*.1,net:other?a:a*.9,secretary:$("secretary").value,status:$("status").value,returned:false};if(editId){let i=records.findIndex(r=>r.id===editId);if(i>=0)records[i]=x}else records.push(x);editId=null;$("amount").value="";persist();render();alert("บันทึกแล้ว")}
-function editRec(id){let r=records.find(x=>x.id===id);editId=id;$("house").value=r.house;$("date").value=r.date;$("amount").value=r.amount;$("secretary").value=r.secretary;$("status").value=r.status;showSelectedStatus();page("home",document.querySelector("nav button"))}
-function delRec(id){if(confirm("ลบรายการนี้ใช่ไหม?")){records=records.filter(r=>r.id!==id);persist();render()}}
-function returnMoney(id){let r=records.find(x=>x.id===id);if(!r||r.status!=="paid")return;if(r.returned)return;r.returned=true;persist();render()}
-function paySecretary(){let pending={};records.forEach(r=>pending[r.secretary]=(pending[r.secretary]||0)+r.fee-(secPaid[r.secretary]||0));let total=Object.values(pending).reduce((a,x)=>a+Math.max(0,x),0);if(total<=0)return alert("ไม่มีค่าเลขาค้างโอน");if(!confirm("ยืนยันโอนเลขา "+money(total)+" ?"))return;Object.entries(pending).forEach(([s,v])=>{if(v>0)secPaid[s]=(secPaid[s]||0)+v});persist();render();alert("โอนเลขาแล้ว")}
-function closeDay(){alert("บันทึกปิดยอดวันนี้แล้ว")}
-function reserveFor(h,d){let sum=reserves.filter(x=>x.house===h&&x.date<=d).reduce((a,x)=>a+x.amount,0);let used=records.filter(x=>x.house===h&&x.date===d).reduce((a,x)=>a+x.amount,0);return {sum,used,remain:Math.max(0,sum-used)}}
-function addReserve(){let h=prompt("บ้าน: "+houses.join(", "));if(!h||!houses.includes(h))return;let n=+prompt("ยอดสำรอง")||0;if(n<=0)return;reserves.push({id:Date.now(),house:h,date:$("reserveDate").value||today(),amount:n});persist();render()}
-function renderReserve(){let d=$("reserveDate").value||today(),tot=0;let body=houses.map(h=>{let z=reserveFor(h,d);tot+=z.remain;let stopped=hs[h]===false;return `<div class="item"><div class="row"><b>${h}</b><span class="tag ${stopped?'stop':'ok'}">${stopped?'🟡 หยุดเบิก':'🟢 เบิกได้'}</span></div><div class="row"><span>ยอดสำรองคงเหลือ</span><b>${money(z.remain)}</b></div>${z.remain?'<div class="muted">ยกไปวันถัดไปของบ้านนี้</div>':''}</div>`}).join("");$("reserveBody").innerHTML=body+`<div class="card"><b>รวมยอดสำรองทุกบ้าน: ${money(tot)}</b></div>`}
-function renderSummary(){let d=$("summaryDate").value||today(),tb=0,tr=0;let rows=houses.map(h=>{let b=records.filter(r=>r.house===h&&r.date===d).reduce((a,r)=>a+r.amount,0),z=reserveFor(h,d);tb+=b;tr+=z.remain;let stopped=hs[h]===false;return `<div class="item"><div class="row"><b>${h}</b><span class="tag ${stopped?'stop':'ok'}">${stopped?'🟡 หยุดเบิก':'🟢 เบิกได้'}</span></div><div class="row"><span>ยอดเบิกวันนี้</span><b>${money(b)}</b></div><div class="row"><span>ยอดสำรอง</span><b>${money(z.remain)}</b></div>${z.remain?'<div style="color:#b45309;font-weight:700;margin-top:5px">ยกไปวันถัดไป</div>':''}</div>`}).join("");$("summaryBody").innerHTML=rows+`<div class="card" style="background:#eef2ff"><div class="row"><b>รวมยอดเบิกทุกบ้าน</b><b>${money(tb)}</b></div><div class="row"><b>รวมยอดสำรองทุกบ้าน</b><b>${money(tr)}</b></div></div>`}
-function renderHistory(){let d=$("historyDate").value||today(),a=records.filter(r=>filter==="all"||r.date===d||filter==="month"&&r.date.slice(0,7)===d.slice(0,7));let full=a.reduce((s,r)=>s+r.amount,0);$("historyTotals").innerHTML=`<div class="card"><b>ยอดเบิก ${money(full)}</b></div>`;$("historyList").innerHTML=a.sort((x,y)=>y.id-x.id).map(r=>`<div class="item"><div class="row"><b>${r.house}</b><span class="tag ${r.returned?'back':r.status==='paid'?'ok':'stop'}">${r.returned?'คืนกระเป๋าแล้ว':r.status==='paid'?'โอนแล้ว':'ยังไม่โอน'}</span></div><div>ยอดเบิก <b>${money(r.amount)}</b></div><div class="muted">${r.date} · เลขา ${r.secretary} · ลูกค้า/ยืม ${money(r.net)}</div><div class="actions"><button class="blue" onclick="editRec(${r.id})">✏️ แก้ไข</button><button class="red" onclick="delRec(${r.id})">🗑️ ลบ</button></div>${r.status==='paid'&&!r.returned?`<button class="green" style="width:100%;margin-top:7px" onclick="returnMoney(${r.id})">↩️ รับเงินคืนเข้ากระเป๋า</button>`:""}</div>`).join("")||"<div class='muted'>ไม่มีรายการ</div>"}
-function setFilter(f,b){filter=f;document.querySelectorAll("#history button").forEach(x=>x.classList.remove("blue"));b.classList.add("blue");renderHistory()}
-function addHouseVisible(){
- let n=$("newHouse").value.trim();
- if(!n)return alert("กรุณาใส่ชื่อบ้าน");
- if(houses.includes(n))return alert("มีบ้านชื่อนี้อยู่แล้ว");
- houses.push(n);hs[n]=true;$("newHouse").value="";persist();render();
-}
-function addSecretaryVisible(){
- let n=$("newSec").value.trim();
- if(!n)return alert("กรุณาใส่ชื่อเลขา");
- if(secs.includes(n))return alert("มีชื่อเลขานี้อยู่แล้ว");
- secs.push(n);$("newSec").value="";persist();render();
-}
-function saveWalletVisible(){
- let n=+$("walletInput").value;
- if(isNaN(n)||n<0)return alert("ยอดเงินไม่ถูกต้อง");
- let old=wallet();walletOverride=n;walletAdjust.push({date:today(),old:old,new:n});
-$("walletInput").value="";persist();render();alert("บันทึกยอดกระเป๋าแล้ว");
-}
-function toggleH(h){hs[h]=hs[h]===false;persist();render()}function renameH(h){let n=prompt("ชื่อใหม่",h);if(!n||n===h)return;let i=houses.indexOf(h);houses[i]=n;hs[n]=hs[h];delete hs[h];persist();render()}function removeH(h){if(confirm("ลบบ้าน "+h+" ?")){houses=houses.filter(x=>x!==h);delete hs[h];persist();render()}}function renameS(s){let n=prompt("ชื่อใหม่",s);if(!n||n===s)return;let i=secs.indexOf(s);secs[i]=n;persist();render()}function removeS(s){if(confirm("ลบเลขา "+s+" ?")){secs=secs.filter(x=>x!==s);persist();render()}}
-function page(p,b){["home","summary","reserve","history","settings"].forEach(x=>$(x).classList.toggle("hidden",x!==p));document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");render()}
+const KEY='berk_new_v2';
+const defaultHouses=['วริศ','ศิลา','ภูดิส','สามชั้น','แพรี่','ปุณปุณ','ริชชี่','เค้กส้ม','พริกเพชร','อื่นๆ'];
+const defaultSecs=['อุษา','เดีย','แนน','ใหม่','นิว','หญิง','เกด','พริก','แจ๋ว','หมิว'];
+let db=JSON.parse(localStorage.getItem(KEY)||'null')||{wallet:30000,houses:[...defaultHouses],secretaries:[...defaultSecs],records:[],statuses:{},adjust:[]};
+const $=id=>document.getElementById(id);
+const today=()=>new Date().toISOString().slice(0,10);
+const money=n=>Number(n||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
+const getStatus=(h,d)=>db.statuses[d+'|'+h]||'green';
+const fee=r=>r.house==='อื่นๆ'?0:r.amount*.10;
+const net=r=>r.house==='อื่นๆ'?r.amount:r.amount*.90;
+function save(){localStorage.setItem(KEY,JSON.stringify(db));render();}
+function setPage(p){window.currentPage=p;render();}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>setPage(b.dataset.page));
+window.currentPage='home';
+
 function render(){
- $("wallet").textContent=money(wallet());
- let current=$("house")?$("house").value:"";
- $("house").innerHTML=houses.map(h=>`<option>${h}</option>`).join("");
- if(current && houses.includes(current))$("house").value=current;
- $("secretary").innerHTML=secs.map(s=>`<option>${s}</option>`).join("");
- renderManage();showSelectedStatus();renderSummary();renderReserve();renderHistory()
+ $('wallet').textContent=money(db.wallet)+' บาท';
+ document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===window.currentPage));
+ ({home:renderHome,summary:renderSummary,reserve:renderReserve,history:renderHistory,settings:renderSettings}[window.currentPage])();
 }
-$("date").value=today();$("summaryDate").value=today();$("reserveDate").value=today();$("historyDate").value=today();render();</script></body></html>
+
+function renderHome(){
+ $('app').innerHTML=`<section class="card"><h2>ทำรายการเบิก</h2>
+ <label>วันที่</label><input id="fDate" type="date" value="${today()}">
+ <label>บ้าน</label><select id="fHouse">${db.houses.map(h=>`<option value="${h}">${h}</option>`).join('')}</select>
+ <label>สถานะบ้าน</label><div id="homeStatus" class="status"></div>
+ <label>ยอดเบิกเต็มจำนวน</label><input id="fAmount" type="number" min="0" step="0.01" placeholder="เช่น 3,000">
+ <label>เลขา</label><select id="fSec">${db.secretaries.map(s=>`<option>${s}</option>`).join('')}</select>
+ <label>สถานะโอนลูกค้า</label><select id="fPaid"><option value="no">ยังไม่โอนลูกค้า</option><option value="yes">โอนลูกค้าแล้ว</option></select>
+ <div id="calc" class="filterbar"></div><button class="primary" style="width:100%;margin-top:8px" onclick="addRecord()">บันทึกรายการ</button></section>`;
+ ['fDate','fHouse','fAmount'].forEach(id=>$(id).addEventListener('input',updateHome));
+ updateHome();
+}
+function updateHome(){
+ const d=$('fDate').value,h=$('fHouse').value,a=+$('fAmount').value||0,s=getStatus(h,d);
+ $('homeStatus').innerHTML=`<button class="${s==='green'?'active green':''}" onclick="changeStatus('${h}','${d}','green')">🟢 เบิกได้</button><button class="${s==='yellow'?'active yellow':''}" onclick="changeStatus('${h}','${d}','yellow')">🟡 หยุดเบิก</button>`;
+ const r={house:h,amount:a};
+ $('calc').innerHTML=`<b>สถานะวันนี้: ${s==='green'?'🟢 เบิกได้':'🟡 หยุดเบิก'}</b><br>ลูกค้าได้รับ: <b>${money(net(r))}</b> บาท<br>เลขา: <b>${money(fee(r))}</b> บาท${s==='yellow'?'<br><span class="muted">รายการบ้านหยุดเบิกจะเป็นเงินสำรองของบ้านนี้</span>':''}`;
+}
+function changeStatus(h,d,s){db.statuses[d+'|'+h]=s;save();}
+function addRecord(){
+ const a=+$('fAmount').value||0;if(a<=0)return alert('กรุณาใส่ยอดเบิก');
+ const r={id:Date.now(),date:$('fDate').value,house:$('fHouse').value,amount:a,secretary:$('fSec').value,paid:$('fPaid').value,returned:false};
+ if(r.paid==='yes')db.wallet-=a;
+ db.records.push(r);save();alert('บันทึกรายการแล้ว');window.currentPage='history';render();
+}
+
+function renderSummary(){
+ $('app').innerHTML=`<section class="card"><h2>📊 สรุป</h2>
+ <label>วันที่ที่ต้องการดู</label><input id="sumDate" type="date" value="${today()}">
+ <div class="filterbar"><b>เลือกบ้านที่ต้องการดู</b><div class="muted">เลือกได้หลายบ้านพร้อมกัน</div>
+ <div class="checkbox-list" id="houseChecks"></div>
+ <button class="gray" style="margin-top:8px;width:100%" onclick="clearHouseFilter()">ดูทุกบ้าน</button></div>
+ <div id="summaryResult"></div></section>`;
+ $('sumDate').addEventListener('change',drawSummary);
+ $('houseChecks').innerHTML=db.houses.map(h=>`<label class="check"><input type="checkbox" value="${h}" onchange="drawSummary()"> ${h}</label>`).join('');
+ drawSummary();
+}
+function selectedHouses(){return [...document.querySelectorAll('#houseChecks input:checked')].map(x=>x.value)}
+function clearHouseFilter(){document.querySelectorAll('#houseChecks input').forEach(x=>x.checked=false);drawSummary();}
+function drawSummary(){
+ const d=$('sumDate').value,selected=selectedHouses(),list=db.houses.filter(h=>!selected.length||selected.includes(h));
+ const rs=db.records.filter(r=>r.date===d&&list.includes(r.house));
+ const total=rs.reduce((a,r)=>a+r.amount,0);
+ const green=rs.filter(r=>getStatus(r.house,d)==='green').reduce((a,r)=>a+r.amount,0);
+ const stopped=rs.filter(r=>getStatus(r.house,d)==='yellow').reduce((a,r)=>a+r.amount,0);
+ const reserve=rs.filter(r=>getStatus(r.house,d)==='yellow'&&!r.returned).reduce((a,r)=>a+r.amount,0);
+ const secretary=rs.reduce((a,r)=>a+fee(r),0);
+ const paidFee=rs.filter(r=>r.paid==='yes').reduce((a,r)=>a+fee(r),0);
+ let out=`<div class="stats"><div class="stat">ยอดทั้งหมด<b>${money(total)}</b></div><div class="stat">ยอดเบิกได้<b>${money(green)}</b></div><div class="stat">ยอดหยุดเบิก<b>${money(stopped)}</b></div><div class="stat">ยอดสำรอง<b>${money(reserve)}</b></div><div class="stat">เลขา<b>${money(secretary)}</b></div><div class="stat">ยอดโอนเลขา<b>${money(paidFee)}</b></div></div>`;
+ out+=`<div class="filterbar"><b>กำลังดู: ${selected.length?selected.join(' + '):'ทุกบ้าน'}</b></div>`;
+ list.forEach(h=>{
+   const x=rs.filter(r=>r.house===h),t=x.reduce((a,r)=>a+r.amount,0),isGreen=getStatus(h,d)==='green',res=x.filter(r=>!r.returned&&getStatus(h,d)==='yellow').reduce((a,r)=>a+r.amount,0),f=x.reduce((a,r)=>a+fee(r),0),pf=x.filter(r=>r.paid==='yes').reduce((a,r)=>a+fee(r),0);
+   out+=`<div class="item"><div class="row"><b>${h}</b><span class="pill ${isGreen?'green':'yellow'}">${isGreen?'🟢 เบิกได้':'🟡 หยุดเบิก'}</span></div><div>ยอดทั้งหมด: <b>${money(t)}</b> บาท</div><div>ยอดเบิกได้: ${money(isGreen?t:0)} บาท</div><div>ยอดหยุดเบิก: ${money(isGreen?0:t)} บาท</div><div>ยอดสำรอง: <b>${money(res)}</b> บาท</div><div>เลขา: ${money(f)} บาท</div><div>ยอดโอนเลขา: ${money(pf)} บาท</div></div>`;
+ });
+ $('summaryResult').innerHTML=out;
+}
+
+function renderReserve(){
+ $('app').innerHTML=`<section class="card"><h2>📦 สำรอง</h2><label>วันที่</label><input id="reserveDate" type="date" value="${today()}" onchange="drawReserve()"><div id="reserveResult"></div></section>`;drawReserve();
+}
+function drawReserve(){
+ const d=$('reserveDate').value;
+ $('reserveResult').innerHTML=db.houses.map(h=>{const x=db.records.filter(r=>r.date===d&&r.house===h&&getStatus(h,d)==='yellow'&&!r.returned).reduce((a,r)=>a+r.amount,0);return `<div class="item"><div class="row"><b>${h}</b><span class="pill ${getStatus(h,d)==='green'?'green':'yellow'}">${getStatus(h,d)==='green'?'เบิกได้':'หยุดเบิก'}</span></div>เงินสำรอง: <b>${money(x)}</b> บาท${x?'<div class="muted">จะคืนเข้ากระเป๋าในวันที่บ้านนี้เป็นเบิกได้</div>':''}</div>`}).join('');
+}
+function renderHistory(){
+ $('app').innerHTML=`<section class="card"><h2>📜 ประวัติ</h2><div class="stats"><div><label>จากวันที่</label><input id="fromDate" type="date"></div><div><label>ถึงวันที่</label><input id="toDate" type="date"></div></div><button class="primary" style="margin-top:10px" onclick="drawHistory()">ค้นหา</button><div id="historyResult"></div></section>`;drawHistory();
+}
+function drawHistory(){
+ const f=$('fromDate').value,t=$('toDate').value;
+ const rs=db.records.filter(r=>(!f||r.date>=f)&&(!t||r.date<=t)).sort((a,b)=>b.id-a.id);
+ $('historyResult').innerHTML=rs.map(r=>`<div class="item"><div class="row"><b>${r.house}</b><span>${r.date}</span></div>เบิก ${money(r.amount)} บาท | ลูกค้า ${money(net(r))} บาท<br>เลขา ${r.secretary} ${money(fee(r))} บาท<br>${r.paid==='yes'?'✅ โอนลูกค้าแล้ว':'⏳ ยังไม่โอนลูกค้า'}<div class="grid" style="margin-top:8px"><button class="gray" onclick="editRecord(${r.id})">แก้ไข</button><button class="danger" onclick="deleteRecord(${r.id})">ลบ</button></div></div>`).join('')||'<p class="muted">ยังไม่มีรายการ</p>';
+}
+function editRecord(id){const r=db.records.find(x=>x.id===id);if(!r)return;const a=prompt('แก้ยอดเบิก',r.amount);if(a===null)return;const n=+a;if(n<=0)return alert('ยอดไม่ถูกต้อง');if(r.paid==='yes')db.wallet+=r.amount;r.amount=n;if(confirm('รายการนี้โอนลูกค้าแล้วใช่ไหม?')){r.paid='yes';db.wallet-=n}else r.paid='no';save();}
+function deleteRecord(id){const r=db.records.find(x=>x.id===id);if(!r||!confirm('ลบรายการนี้ใช่ไหม?'))return;if(r.paid==='yes')db.wallet+=r.amount;db.records=db.records.filter(x=>x.id!==id);save();}
+
+function renderSettings(){
+ $('app').innerHTML=`<section class="card"><h2>⚙️ ตั้งค่า</h2><label>ปรับกระเป๋าเงิน</label><input id="adjustAmount" type="number" placeholder="เช่น 500 หรือ -500"><button class="primary" style="margin-top:8px" onclick="adjustWallet()">บันทึก</button><hr><b>กระเป๋าปัจจุบัน ${money(db.wallet)} บาท</b></section>
+ <section class="card"><h2>🏠 บ้าน</h2><input id="newHouse" placeholder="ชื่อบ้านใหม่"><button class="primary" style="margin-top:8px" onclick="addHouse()">เพิ่มบ้าน</button>${db.houses.map(h=>`<div class="item">${h}</div>`).join('')}</section>
+ <section class="card"><h2>👩‍💼 เลขา</h2><input id="newSec" placeholder="ชื่อเลขาใหม่"><button class="primary" style="margin-top:8px" onclick="addSec()">เพิ่มเลขา</button>${db.secretaries.map(s=>`<div class="item">${s}</div>`).join('')}</section>`;
+}
+function adjustWallet(){const n=+$('adjustAmount').value||0;if(!n)return;db.wallet+=n;db.adjust.push({date:today(),amount:n});save();}
+function addHouse(){const h=$('newHouse').value.trim();if(!h)return;if(db.houses.includes(h))return alert('มีบ้านนี้แล้ว');db.houses.push(h);save();}
+function addSec(){const s=$('newSec').value.trim();if(!s)return;if(db.secretaries.includes(s))return alert('มีเลขานี้แล้ว');db.secretaries.push(s);save();}
+render();
+</script>
+</body>
+</html>
