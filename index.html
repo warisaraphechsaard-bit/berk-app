@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>โปรแกรมทำเบิก</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,"Noto Sans Thai",sans-serif;margin:0;background:#f3f7f7;color:#183238}
+header{background:#0b9d8d;color:#fff;padding:20px;font-size:25px;font-weight:800}
+main{max-width:760px;margin:auto;padding:14px}.card{background:#fff;border-radius:18px;padding:17px;margin-bottom:14px;box-shadow:0 3px 14px #0001}
+h2{margin:0 0 13px;font-size:19px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+button{border:2px solid #d5e3e1;background:#fff;border-radius:12px;padding:14px 5px;font-size:16px;font-weight:700}
+button.selected{background:#caf4ee;border-color:#079b89;color:#08786d}
+label{display:block;font-weight:700;margin:10px 0 5px}input{width:100%;height:46px;border:1px solid #cbd8d9;border-radius:10px;padding:0 11px;font-size:17px;box-sizing:border-box}
+.save{width:100%;background:#0b9d8d;color:#fff;border:0;margin-top:15px}.item{border-bottom:1px solid #e3ebeb;padding:11px 0;line-height:1.6}
+@media(max-width:520px){.grid{grid-template-columns:repeat(2,1fr)}}
+</style></head><body>
+<header>โปรแกรมทำเบิก</header><main>
+<div class="card"><h2>🏠 เลือกบ้าน</h2><div id="houses" class="grid"></div><p>บ้าน: <b id="h">ยังไม่ได้เลือก</b></p></div>
+<div class="card"><h2>👩‍💼 เลือกเลขา</h2><div id="secs" class="grid"></div><p>เลขา: <b id="s">ยังไม่ได้เลือก</b></p></div>
+<div class="card"><h2>💰 ยอดเงิน</h2>
+<label>ยอดเบิก</label><input id="b" type="number">
+<label>ยอดสำรอง</label><input id="r" type="number">
+<label>ยอดที่ยังไม่ได้เบิกจ่าย</label><input id="p" type="number">
+<label>ค่าเอกสารที่เลขาต้องได้รับ</label><input id="d" type="number">
+<button class="save" onclick="save()">บันทึก</button></div>
+<div class="card"><h2>📋 ประวัติ</h2><div id="list">ยังไม่มีรายการ</div></div>
+</main>
+<script>
+const H=["วริศ","ศิลา","ภูดิสิ","สามชั้น","แพรึ่","ปุณปุณ","เค้กส้ม","ริชชึ่","พริกเพชร"];
+const S=["อุษา","เดีย","แนน","ใหม่","นิว","หญิง","เกด","พริก","แจ๋ว"];
+let h="",s="";
+function buttons(arr,id,cb){let e=document.getElementById(id);arr.forEach(x=>{let b=document.createElement("button");b.textContent=x;b.onclick=()=>{e.querySelectorAll("button").forEach(q=>q.classList.remove("selected"));b.classList.add("selected");cb(x)};e.appendChild(b)})}
+buttons(H,"houses",x=>{h=x;document.getElementById("h").textContent=x});
+buttons(S,"secs",x=>{s=x;document.getElementById("s").textContent=x});
+function save(){if(!h)return alert("กรุณาเลือกบ้าน");if(!s)return alert("กรุณาเลือกเลขา");let x=document.createElement("div");x.className="item";x.innerHTML="<b>"+h+"</b> · เลขา "+s+"<br>เบิก "+(+b.value||0)+" | สำรอง "+(+r.value||0)+" | ยังไม่จ่าย "+(+p.value||0)+" | เอกสาร "+(+d.value||0);if(list.textContent==="ยังไม่มีรายการ")list.textContent="";list.prepend(x)}
+</script></body></html>
